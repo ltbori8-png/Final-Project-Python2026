@@ -1,7 +1,9 @@
 import selenium
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+import By
+import WebDriverWait
+import expected_conditions as EC
 import json
-from datetime import date
+import date
 
+def write_json(data):
+    with open('price.json', 'w'):
