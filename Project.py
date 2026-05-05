@@ -33,3 +33,10 @@ options.add_experimental_option("detach", True)
 options.add_argument("headless")
 driver = webdriver.Edge(options=options)
 driver.get("https://www.amazon.com/Pokemon-TCG-Scarlet-Violet-Prismatic-Evolutions/dp/B0DLPL7LC5/ref=asc_df_B0DLPL7LC5?tag=bingshoppinga-20&linkCode=df0&hvadid=80883033960730&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=95351&hvtargid=pla-4584482509038924&psc=1&msclkid=b87c67c97e491f0c1b610e336bac0581")
+print(driver.title)
+
+wait = WebDriverWait(driver, 10)
+item_price = wait.until(
+    EC.presence_of_element_located(By.CSS_SELECTOR, "[data-test='product-price']")
+)
+print(item_price.text)
