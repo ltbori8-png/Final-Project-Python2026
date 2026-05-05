@@ -10,3 +10,9 @@ from datetime import date
 def write_json(data):
     with open('price.json', 'w') as file:
         json.dump(data, file, indent=4)
+def read_json():
+    try:
+        with open('price.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return None
