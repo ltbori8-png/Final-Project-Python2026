@@ -1,3 +1,4 @@
+import Class
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,3 +17,14 @@ def read_json():
             return json.load(file)
     except FileNotFoundError:
         return None
+
+class PriceEntry:
+    def __init__(self, entry_date, price):
+        self.date = entry_date
+        self.price = price
+
+    def to_dict(self):
+        return {
+            "date": self.date,
+            "price": self.price,
+        }
