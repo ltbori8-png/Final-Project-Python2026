@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import date
+import requests
 
 def write_json(data):
     with open('price.json', 'w') as file:
@@ -37,6 +38,14 @@ print(driver.title)
 
 wait = WebDriverWait(driver, 10)
 item_price = wait.until(
-    EC.presence_of_element_located(By.CSS_SELECTOR, "[data-test='product-price']")
+    EC.presence_of_element_located((By.CSS_SELECTOR, "[data-test='product-price']"))
 )
 print(item_price.text)
+price_value = float(item_price.text.replace("$", "").replace(",", "").strip())
+today = str(date.today())
+new_entry = PriceEntry(today, price_value)
+
+data = read_json()
+if data is None:
+    data = []
+data.append(new_entry.to_dict())
