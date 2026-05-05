@@ -26,5 +26,5 @@ class PriceEntry:
     def to_dict(self):
         return {
             "date": self.date,
-            "price": self.price,
+            "price": self.price
         }
