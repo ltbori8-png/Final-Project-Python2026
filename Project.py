@@ -1,4 +1,3 @@
-import Class
 import selenium
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -28,3 +27,8 @@ class PriceEntry:
             "date": self.date,
             "price": self.price
         }
+
+options = webdriver.EdgeOptions()
+options.add_experimental_option("detach", True)
+options.add_argument("headless")
+driver = webdriver.Edge(options=options)
