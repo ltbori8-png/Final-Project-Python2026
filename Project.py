@@ -19,14 +19,20 @@ def read_json():
     except FileNotFoundError:
         return None
 
-class PriceEntry:
-    def __init__(self, entry_date, price):
-        self.date = entry_date
-        self.price = price
+class Product:
+    def __init__(self, name, site, url, tag, class_name):
+        self.name = name
+        self.site = site
+        self.url = url
+        self.tag = tag
+        self.class_name = class_name
+        self.price = None
 
     def to_dict(self):
         return {
-            "date": self.date,
+            "name": self.name,
+            "site": self.site,
+            "url": self.url,
             "price": self.price
         }
 
@@ -43,7 +49,7 @@ item_price = wait.until(
 print(item_price.text)
 price_value = float(item_price.text.replace("$", "").replace(",", "").strip())
 today = str(date.today())
-new_entry = PriceEntry(today, price_value)
+new_entry = Product(today, price_value)
 
 data = read_json()
 if data is None:
