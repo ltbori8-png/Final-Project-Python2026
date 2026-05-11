@@ -6,8 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import date
-import requests
-from bs4 import BeautifulSoup
+
 
 def write_json(data):
     with open('price.json', 'w') as file:
