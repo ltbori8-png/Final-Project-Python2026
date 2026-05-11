@@ -39,7 +39,8 @@ class Product:
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 driver = webdriver.Edge(options=options)
-driver.get("https://www.amazon.com/Pokemon-TCG-Scarlet-Violet-Prismatic-Evolutions/dp/B0DLPL7LC5/ref=asc_df_B0DLPL7LC5?tag=bingshoppinga-20&linkCode=df0&hvadid=80883033960730&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=95351&hvtargid=pla-4584482509038924&psc=1&msclkid=b87c67c97e491f0c1b610e336bac0581")
+driver.get("https://www.walmart.com/ip/Pokemon-Scarlet-and-Violet-8-5-Prismatic-Evolutions-Elite-Trainer-Box/13816151308?wmlspartner=wlpa&selectedSellerId=101515736&sourceid=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&veh=dsn&wmlspartner=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&cn=00pd_fy27_mp_mp_lo_int_dis_mpmax-p13n&wl9=&wl11=Online&msclkid=0974eb77d1ed1d34b0238175d8df4135")
+driver.get("https://www.target.com/p/pokemon-tcg-scarlet-violet-elite-trainer-box-prismatic-evolutions-of-the-pokemon-tcg-1-fully-illustrated-promo-card-9-booster-packs-premium/-/A-1008746912#lnk=sametab")
 print(driver.title)
 
 wait = WebDriverWait(driver, 10)
