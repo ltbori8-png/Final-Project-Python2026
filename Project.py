@@ -52,6 +52,9 @@ class WebsiteScrapper:
                 (By.CSS_SELECTOR, self.css_selector)
             )
         )
+
+        price_text = item_price.text
+
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 driver = webdriver.Edge(options=options)
