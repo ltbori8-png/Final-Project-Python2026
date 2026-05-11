@@ -58,6 +58,12 @@ class WebsiteScrapper:
         cleaned_price = (
             price_text.replace("$", "").replace(",", "").strip()
         )
+        return float(cleaned_price)
+
+class PriceComparer:
+    def __int__(self, product):
+        self.product = product
+
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 driver = webdriver.Edge(options=options)
