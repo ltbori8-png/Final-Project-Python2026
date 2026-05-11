@@ -55,6 +55,9 @@ class WebsiteScrapper:
 
         price_text = item_price.text
 
+        cleaned_price = (
+            price_text.replace("$", "").replace(",", "").strip()
+        )
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 driver = webdriver.Edge(options=options)
