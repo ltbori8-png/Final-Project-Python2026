@@ -64,6 +64,9 @@ class PriceComparer:
     def __int__(self, product):
         self.product = product
 
+    def compare(self):
+        cheapest = self.product.cheapest_site()
+        print(f"/nCheapest Site: {cheapest}")
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 driver = webdriver.Edge(options=options)
