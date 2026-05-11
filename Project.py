@@ -19,20 +19,22 @@ def read_json():
         return None
 
 class Product:
-    def __init__(self, name, site, url, tag, class_name):
+    def __init__(self, name):
         self.name = name
-        self.site = site
-        self.url = url
-        self.tag = tag
-        self.class_name = class_name
-        self.price = None
+        self.price = {}
+
+    def add_price (self, site, price):
+        self.prices[site] = price
+
+    def cheapest_price(self):
+        return min(self.price, key=self.price.get)
 
     def to_dict(self):
         return {
+            "date": str(date.today()),
             "name": self.name,
-            "site": self.site,
-            "url": self.url,
-            "price": self.price
+            "prices": self.price,
+            "cheapest": self.cheapest_site()
         }
 
 options = webdriver.EdgeOptions()
