@@ -7,12 +7,13 @@ import json
 from datetime import date
 
 class JSONManager:
-    def write_json(data):
-        with open('price.json', 'w') as file:
+    def write_json(data, filename="prices.json"):
+        with open(filename, 'w') as file:
             json.dump(data, file, indent=4)
-    def read_json(filename="price.json"):
+
+    def read_json(filename="prices.json"):
         try:
-            with open('price.json', 'r') as file:
+            with open(filename, 'r') as file:
                 return json.load(file)
         except FileNotFoundError:
             return None
@@ -20,22 +21,22 @@ class JSONManager:
 class Product:
     def __init__(self, name):
         self.name = name
-        self.price = {}
+        self.prices = {}
 
     def add_price(self, site, price):
         self.prices[site] = price
 
     def cheapest_site(self):
-        return min(self.price, key=self.price.get)
+        return min(self.prices, key=self.prices.get)
 
     def cheapest_price(self):
         return self.prices[self.cheapest_site()]
 
     def to_dict(self):
         return {
-            "date": str(date.today()),
-            "name": self.name,
-            "prices": self.price,
+            "Date": str(date.today()),
+            "Name": self.name,
+            "Prices": self.prices,
             "Cheapest Site": self.cheapest_site(),
             "Cheapest Price": self.cheapest_price()
         }
@@ -77,7 +78,7 @@ def main():
     options = webdriver.EdgeOptions()
     options.add_experimental_option("detach", True)
     driver = webdriver.Edge(options=options)
-    pokemon_item = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
+    pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
     websites = [
         WebsiteScrapper(
             "Walmart",
@@ -93,16 +94,16 @@ def main():
     for site in websites:
         try:
             price = site.get_price(driver)
-            pokemon_item.add_price(site.site_name,price)
+            pokemon_box.add_price(site.site_name,price)
             print(f"{site.site_name}: ${price}")
         except Exception as e:
             print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
-            comparer = PriceComparer(pokemon_item)
+            comparer = PriceComparer()
             comparer.compare()
 
             old_data = JSONManager.read_json()
             old_data.append(
-                pokemon_item.to_dict()
+                pokemon_box.to_dict()
             )
             JSONManager.write_json(old_data)
             print("\nSaved to price.json")
