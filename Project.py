@@ -90,3 +90,10 @@ def main():
             '[data-test="product-price"]'
         )
     ]
+    for site in websites:
+        try:
+            price = site.get_price(driver)
+            pokemon_item.add_price(site.site_name,price)
+            print(f"{site.site_name}: ${price}")
+        except Exception as e:
+            print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
