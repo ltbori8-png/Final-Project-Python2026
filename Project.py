@@ -6,34 +6,38 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import date
 
-
-def write_json(data):
-    with open('price.json', 'w') as file:
-        json.dump(data, file, indent=4)
-def read_json():
-    try:
-        with open('price.json', 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return None
+class JSONManager:
+    def write_json(data):
+        with open('price.json', 'w') as file:
+            json.dump(data, file, indent=4)
+    def read_json(filename="price.json"):
+        try:
+            with open('price.json', 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return None
 
 class Product:
     def __init__(self, name):
         self.name = name
         self.price = {}
 
-    def add_price (self, site, price):
+    def add_price(self, site, price):
         self.prices[site] = price
 
-    def cheapest_price(self):
+    def cheapest_site(self):
         return min(self.price, key=self.price.get)
+
+    def cheapest_price(self):
+        return self.prices[self.cheapest_site()]
 
     def to_dict(self):
         return {
             "date": str(date.today()),
             "name": self.name,
             "prices": self.price,
-            "cheapest": self.cheapest_site()
+            "Cheapest Site": self.cheapest_site(),
+            "Cheapest Price": self.cheapest_price()
         }
 
 class WebsiteScrapper:
@@ -44,17 +48,13 @@ class WebsiteScrapper:
 
     def get_price(self, driver):
         driver.get(self.url)
-
         wait = WebDriverWait(driver, 10)
-
         item_price = wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, self.css_selector)
             )
         )
-
         price_text = item_price.text
-
         cleaned_price = (
             price_text.replace("$", "").replace(",", "").strip()
         )
@@ -97,3 +97,16 @@ def main():
             print(f"{site.site_name}: ${price}")
         except Exception as e:
             print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
+            comparer = PriceComparer(pokemon_item)
+            comparer.compare()
+
+            old_data = JSONManager.read_json()
+            old_data.append(
+                pokemon_item.to_dict()
+            )
+            JSONManager.write_json(old_data)
+            print("\nSaved to price.json")
+            driver.quit()
+
+    if __name__ == "__main__":
+        main()
