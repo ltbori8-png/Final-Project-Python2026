@@ -100,7 +100,6 @@ def main():
             print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
             comparer = PriceComparer()
             comparer.compare()
-
             old_data = JSONManager.read_json()
             old_data.append(
                 pokemon_box.to_dict()
