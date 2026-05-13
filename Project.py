@@ -6,17 +6,16 @@ from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import date
 
-class JSONManager:
-    def write_json(data, filename="prices.json"):
-        with open(filename, 'w') as file:
-            json.dump(data, file, indent=4)
+def write_json(data):
+    with open("prices.json", 'w') as file:
+        json.dump(data, file, indent=4)
 
-    def read_json(filename="prices.json"):
-        try:
-            with open(filename, 'r') as file:
-                return json.load(file)
-        except FileNotFoundError:
-            return None
+def read_json():
+    try:
+        with open("prices.json", 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return None
 
 class Product:
     def __init__(self, name):
@@ -100,11 +99,11 @@ def main():
             print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
             comparer = PriceComparer()
             comparer.compare()
-            old_data = JSONManager.read_json()
+            old_data = read_json()
             old_data.append(
                 pokemon_box.to_dict()
             )
-            JSONManager.write_json(old_data)
+            write_json(old_data)
             print("\nSaved to price.json")
             driver.quit()
 
