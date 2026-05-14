@@ -3,9 +3,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
-from datetime import date
+from datetime import datetime
 from dataclasses import dataclass, field
 import re
+import logging
 
 def write_json(data):
     with open("prices.json", 'w') as file:
@@ -16,7 +17,7 @@ def read_json() -> None:
         with open("prices.json", 'r') as file:
             return json.load(file)
     except FileNotFoundError:
-        return None
+        return []
 
 @dataclass
 class Product:
@@ -36,7 +37,7 @@ class Product:
 
     def to_dict(self):
         return {
-            "Date": str(date.today()),
+            "Date": datetime.now().isoformat(),
             "Name": self.name,
             "Prices": self.prices,
             "Cheapest Site": self.cheapest_site(),
@@ -73,14 +74,14 @@ class PriceComparer:
 
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
-options.add_argument("headless")
+options.add_argument("--headless=new")
 driver = webdriver.Edge(options=options)
 
 pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
 websites = [
     WebsiteScraper(
         "Walmart",
-        "https://www.walmart.com/ip/Pokemon-Scarlet-and-Violet-8-5-Prismatic-Evolutions-Elite-Trainer-Box/13816151308?wmlspartner=wlpa&selectedSellerId=101515736&sourceid=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&veh=dsn&wmlspartner=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&cn=00pd_fy27_mp_mp_lo_int_dis_mpmax-p13n&wl9=&wl11=Online&msclkid=0974eb77d1ed1d34b0238175d8df4135",
+        "https://www.walmart.com/ip/13816151308",
         '[itemprop="price"]'
     ),
     WebsiteScraper(
@@ -97,8 +98,12 @@ def main():
                 pokemon_box.add_price(site.site_name, price)
                 print(f"{site.site_name}: ${price}")
             except Exception as e:
-                print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
-
+                logging.error(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
+            for attempt in range(3):
+                try:
+                    return site.get_price(driver)
+                except Exception:
+                    continue
         comparer = PriceComparer(pokemon_box)
         comparer.compare()
         old_data = read_json()
@@ -106,7 +111,7 @@ def main():
             old_data = []
         old_data.append(pokemon_box.to_dict())
         write_json(old_data)
-        print("\nSaved to price.json")
+        logging.info("Saved to price.json")
     finally:
         driver.quit()
 if __name__ == "__main__":
