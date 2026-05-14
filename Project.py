@@ -75,6 +75,7 @@ options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
 options.add_argument("headless")
 driver = webdriver.Edge(options=options)
+
 pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
 websites = [
     WebsiteScraper(
@@ -88,20 +89,25 @@ websites = [
         '[data-test="product-price"]'
     )
 ]
-for site in websites:
+def main():
     try:
-        price = site.get_price(driver)
-        pokemon_box.add_price(site.site_name, price)
-        print(f"{site.site_name}: ${price}")
-    except Exception as e:
-        print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
+        for site in websites:
+            try:
+                price = site.get_price(driver)
+                pokemon_box.add_price(site.site_name, price)
+                print(f"{site.site_name}: ${price}")
+            except Exception as e:
+                print(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
 
-comparer = PriceComparer(pokemon_box)
-comparer.compare()
-old_data = read_json()
-if old_data is None:
-    old_data = []
-old_data.append(pokemon_box.to_dict())
-write_json(old_data)
-print("\nSaved to price.json")
-driver.quit()
+        comparer = PriceComparer(pokemon_box)
+        comparer.compare()
+        old_data = read_json()
+        if old_data is None:
+            old_data = []
+        old_data.append(pokemon_box.to_dict())
+        write_json(old_data)
+        print("\nSaved to price.json")
+    finally:
+        driver.quit()
+if __name__ == "__main__":
+    main()
