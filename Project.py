@@ -19,7 +19,7 @@ def read_json():
 class Product:
     def __init__(self, name):
         self.name = name
-        self.prices = []
+        self.prices = {}
 
     def add_price(self, site, price):
         self.prices[site] = price
@@ -93,6 +93,8 @@ for site in websites:
 comparer = PriceComparer(pokemon_box)
 comparer.compare()
 old_data = read_json()
+if old_data is None:
+    old_data = []
 old_data.append(pokemon_box.to_dict())
 write_json(old_data)
 print("\nSaved to price.json")
