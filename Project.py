@@ -4,27 +4,31 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 from datetime import date
+from dataclasses import dataclass, field
+import re
 
 def write_json(data):
     with open("prices.json", 'w') as file:
         json.dump(data, file, indent=4)
 
-def read_json():
+def read_json() -> None:
     try:
         with open("prices.json", 'r') as file:
             return json.load(file)
     except FileNotFoundError:
         return None
 
+@dataclass
 class Product:
-    def __init__(self, name):
-        self.name = name
-        self.prices = {}
+    name: str
+    prices: dict = field(default_factory=dict)
 
-    def add_price(self, site, price):
+    def add_price(self, site, price: float) -> None:
         self.prices[site] = price
 
     def cheapest_site(self):
+        if not self.prices:
+            return None
         return min(self.prices, key=self.prices.get)
 
     def cheapest_price(self):
@@ -39,7 +43,7 @@ class Product:
             "Cheapest Price": self.cheapest_price()
         }
 
-class WebsiteScrapper:
+class WebsiteScraper:
     def __init__(self, site_name, url, css_selector):
         self.site_name = site_name
         self.url = url
@@ -50,10 +54,11 @@ class WebsiteScrapper:
         wait = WebDriverWait(driver, 10)
         item_price = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, self.css_selector)))
         price_text = item_price.text
-        cleaned_price = (
-            price_text.replace("$", "").replace(",", "").strip()
-        )
-        return float(cleaned_price)
+        match = re.search(r"\d+(\.\d+)?", price_text)
+        if match:
+            return float(match.group())
+        else:
+            raise ValueError("Price not found")
 
 class PriceComparer:
     def __init__(self, product):
@@ -72,12 +77,12 @@ options.add_argument("headless")
 driver = webdriver.Edge(options=options)
 pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
 websites = [
-    WebsiteScrapper(
+    WebsiteScraper(
         "Walmart",
         "https://www.walmart.com/ip/Pokemon-Scarlet-and-Violet-8-5-Prismatic-Evolutions-Elite-Trainer-Box/13816151308?wmlspartner=wlpa&selectedSellerId=101515736&sourceid=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&veh=dsn&wmlspartner=dsn_mpmax_b7816648-c1aa-4cbe-a348-bade7e6d185e&cn=00pd_fy27_mp_mp_lo_int_dis_mpmax-p13n&wl9=&wl11=Online&msclkid=0974eb77d1ed1d34b0238175d8df4135",
         '[itemprop="price"]'
     ),
-    WebsiteScrapper(
+    WebsiteScraper(
         "Target",
         "https://www.target.com/p/pokemon-tcg-scarlet-violet-elite-trainer-box-prismatic-evolutions-of-the-pokemon-tcg-1-fully-illustrated-promo-card-9-booster-packs-premium/-/A-1008746912#lnk=sametab",
         '[data-test="product-price"]'
