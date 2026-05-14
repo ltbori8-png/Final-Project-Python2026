@@ -68,6 +68,7 @@ class PriceComparer:
 
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
+options.add_argument("headless")
 driver = webdriver.Edge(options=options)
 pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
 websites = [
