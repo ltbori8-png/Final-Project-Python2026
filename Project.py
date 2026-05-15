@@ -1,3 +1,4 @@
+import random
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -58,7 +59,7 @@ class WebsiteScraper:
     def get_price(self, driver):
         driver.get(self.url)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        time.sleep(2)
+        time.sleep(random.uniform(2, 5))
         wait = WebDriverWait(driver, 15)
         item_price = wait.until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector)))
@@ -85,6 +86,7 @@ options.add_argument(r"--user-data-dir=C:\selenium-profile")
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "AppleWebKit/537.36 (KHTML, like Gecko)" "Chrome/122.0.0.0 Safari/537.36")
 driver = webdriver.Edge(options=options)
+driver.set_page_load_timeout(30)
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
     WebsiteScraper(
@@ -121,7 +123,9 @@ def main():
         old_data.append(pokemon_box.to_dict())
         write_json(old_data)
         logging.info("Saved to price.json")
-    finally:
-        driver.quit()
+    except WebDriverException as e:
+    logging.error(f"Driver crashed: {e}")
+    driver.quit()
+    driver = webdriver.Edge(options=options)
 if __name__ == "__main__":
     main()
