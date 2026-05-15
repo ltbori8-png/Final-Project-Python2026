@@ -1,3 +1,4 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -33,7 +34,10 @@ class Product:
         return min(self.prices, key=self.prices.get)
 
     def cheapest_price(self):
-        return self.prices[self.cheapest_site()]
+        site = self.cheapest_site()
+        if site is None:
+            return None
+        return self.prices[site]
 
     def to_dict(self):
         return {
@@ -52,13 +56,14 @@ class WebsiteScraper:
 
     def get_price(self, driver):
         driver.get(self.url)
+        time.sleep(2)
         wait = WebDriverWait(driver, 15)
         item_price = wait.until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector)))
         price_text = item_price.text
-        match = re.search(r"\d+(\.\d+)?", price_text)
+        match = re.search(r"\$?(\d+\.\d{2})", price_text)
         if match:
-            return float(match.group())
+            return float(match.group(1))
         else:
             raise ValueError("Price not found")
 
@@ -74,44 +79,45 @@ class PriceComparer:
 
 
 options = webdriver.EdgeOptions()
-options.add_experimental_option("detach", True)
-#options.add_argument("--headless=new")
+options.add_argument(r"--user-data-dir=C:\selenium-profile")
 options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument(
+    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/122.0.0.0 Safari/537.36"
+)
 driver = webdriver.Edge(options=options)
 driver.execute_script(
     "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
 )
-pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
+pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
     WebsiteScraper(
-        "Best Buy",
-        "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-prismatic-evolutions-elite-trainer-box/JJG2TLCW3L?irclickid=Qs-S9g1x%3AxyZT0FUiLSk3UBrUkuUdn2Wryp0140&irgwc=1&afsrc=1&ref=198&loc=Affinity.&acampID=&mpid=95368&affgroup=%22Deals%22",
-        '[data-automation-id="product-price"]'
+        "Amazon",
+        "https://www.amazon.com/Pokemon-TCG-Scarlet-Violet-Trainer/dp/B0BSNXK3H7/ref=asc_df_B0BSNXK3H7?tag=bingshoppinga-20&linkCode=df0&hvadid=80058400530621&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=95351&hvtargid=pla-4583657880136532&msclkid=9a8a1d99241d169a30f4779e6e772dc9&th=1",
+        'span.a-price-whole'
     ),
     WebsiteScraper(
-        "Target",
-        "https://www.target.com/p/pokemon-tcg-scarlet-violet-elite-trainer-box-prismatic-evolutions-of-the-pokemon-tcg-1-fully-illustrated-promo-card-9-booster-packs-premium/-/A-1008746912#lnk=sametab",
-        '[data-test="product-price"]'
+        "Walmart",
+        "https://www.walmart.com/ip/Pokemon-TCG-Scarlet-and-Violet-Elite-Trainer-Box-Koraidon-Red-1-Full-Art-Promo-Card-9-Boosters-and-Premium-Accessories/2782014366?wmlspartner=wlpa&selectedSellerId=101070956&sourceid=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&veh=dsn&wmlspartner=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&cn=00k9_fy27_mp_mp_lo_int_dis_mpmax&wl9=&wl11=Online&msclkid=e95a424cea9314207da6284ba1d08e8b",
+        'span[itemprop="price"]'
     )
 ]
 def main():
     try:
         for site in websites:
-            try:
-                price = site.get_price(driver)
-                pokemon_box.add_price(site.site_name, price)
-                print(f"{site.site_name}: ${price}")
-            except Exception as e:
-                logging.error(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
-        for site in websites:
+            success = False
             for attempt in range(3):
                 try:
                     price = site.get_price(driver)
                     pokemon_box.add_price(site.site_name, price)
                     print(f"{site.site_name}: ${price}")
+                    success = True
                     break
                 except Exception as e:
                     logging.error(f"{site.site_name} attempt {attempt + 1} failed: {e}")
+            if not success:
+                logging.exception(f"{site.site_name} attempt {attempt + 1} failed")
         comparer = PriceComparer(pokemon_box)
         comparer.compare()
         old_data = read_json()
