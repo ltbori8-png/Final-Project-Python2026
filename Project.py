@@ -52,8 +52,9 @@ class WebsiteScraper:
 
     def get_price(self, driver):
         driver.get(self.url)
-        wait = WebDriverWait(driver, 10)
-        item_price = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, self.css_selector)))
+        wait = WebDriverWait(driver, 15)
+        item_price = wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector)))
         price_text = item_price.text
         match = re.search(r"\d+(\.\d+)?", price_text)
         if match:
@@ -74,15 +75,18 @@ class PriceComparer:
 
 options = webdriver.EdgeOptions()
 options.add_experimental_option("detach", True)
-options.add_argument("--headless=new")
+#options.add_argument("--headless=new")
+options.add_argument("--disable-blink-features=AutomationControlled")
 driver = webdriver.Edge(options=options)
-
+driver.execute_script(
+    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+)
 pokemon_box = Product ("Pokemon TCG: Scarlet & Violet: Prismatic Elite Box")
 websites = [
     WebsiteScraper(
-        "Walmart",
-        "https://www.walmart.com/ip/13816151308",
-        '[itemprop="price"]'
+        "Best Buy",
+        "https://www.bestbuy.com/product/pokemon-trading-card-game-scarlet-violet-prismatic-evolutions-elite-trainer-box/JJG2TLCW3L?irclickid=Qs-S9g1x%3AxyZT0FUiLSk3UBrUkuUdn2Wryp0140&irgwc=1&afsrc=1&ref=198&loc=Affinity.&acampID=&mpid=95368&affgroup=%22Deals%22",
+        '[data-automation-id="product-price"]'
     ),
     WebsiteScraper(
         "Target",
@@ -99,11 +103,15 @@ def main():
                 print(f"{site.site_name}: ${price}")
             except Exception as e:
                 logging.error(f"There's been an error in scraping from {site.site_name}: {e}... sorry")
+        for site in websites:
             for attempt in range(3):
                 try:
-                    return site.get_price(driver)
-                except Exception:
-                    continue
+                    price = site.get_price(driver)
+                    pokemon_box.add_price(site.site_name, price)
+                    print(f"{site.site_name}: ${price}")
+                    break
+                except Exception as e:
+                    logging.error(f"{site.site_name} attempt {attempt + 1} failed: {e}")
         comparer = PriceComparer(pokemon_box)
         comparer.compare()
         old_data = read_json()
