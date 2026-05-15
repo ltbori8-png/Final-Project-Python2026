@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import WebDriverException
 import json
 from datetime import datetime
 from dataclasses import dataclass, field
@@ -56,6 +57,7 @@ class WebsiteScraper:
 
     def get_price(self, driver):
         driver.get(self.url)
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         time.sleep(2)
         wait = WebDriverWait(driver, 15)
         item_price = wait.until(
@@ -81,15 +83,8 @@ class PriceComparer:
 options = webdriver.EdgeOptions()
 options.add_argument(r"--user-data-dir=C:\selenium-profile")
 options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument(
-    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/122.0.0.0 Safari/537.36"
-)
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "AppleWebKit/537.36 (KHTML, like Gecko)" "Chrome/122.0.0.0 Safari/537.36")
 driver = webdriver.Edge(options=options)
-driver.execute_script(
-    "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
-)
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
     WebsiteScraper(
