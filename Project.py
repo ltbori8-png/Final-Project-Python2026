@@ -63,9 +63,10 @@ class WebsiteScraper:
         time.sleep(random.uniform(2, 5))
         wait = WebDriverWait(driver, 15)
         item_price = wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector))
+            EC.presence_of_element_located((By.CSS_SELECTOR, self.css_selector))
         )
         print(item_price.get_attribute("outerHTML"))
+        price_text = item_price.text
         match = re.search(r"\$?([\d,]+\.\d{2})", price_text)
         if match:
             return float(match.group(1).replace(",", ""))
@@ -106,7 +107,7 @@ websites = [
     WebsiteScraper(
         "Walmart",
         "https://www.walmart.com/ip/Pokemon-TCG-Scarlet-and-Violet-Elite-Trainer-Box-Koraidon-Red-1-Full-Art-Promo-Card-9-Boosters-and-Premium-Accessories/2782014366?wmlspartner=wlpa&selectedSellerId=101070956&sourceid=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&veh=dsn&wmlspartner=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&cn=00k9_fy27_mp_mp_lo_int_dis_mpmax&wl9=&wl11=Online&msclkid=e95a424cea9314207da6284ba1d08e8b",
-        'span[itemprop="price"]
+        'span[itemprop="price"]'
     )
 ]
 def main():
