@@ -92,7 +92,7 @@ websites = [
     WebsiteScraper(
         "Amazon",
         "https://www.amazon.com/Pokemon-TCG-Scarlet-Violet-Trainer/dp/B0BSNXK3H7/ref=asc_df_B0BSNXK3H7?tag=bingshoppinga-20&linkCode=df0&hvadid=80058400530621&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=95351&hvtargid=pla-4583657880136532&msclkid=9a8a1d99241d169a30f4779e6e772dc9&th=1",
-        'span.a-price-whole'
+        'span.a-offscreen'
     ),
     WebsiteScraper(
         "Walmart",
@@ -124,8 +124,8 @@ def main():
         write_json(old_data)
         logging.info("Saved to price.json")
     except WebDriverException as e:
-    logging.error(f"Driver crashed: {e}")
-    driver.quit()
-    driver = webdriver.Edge(options=options)
+        logging.error(f"Driver crashed: {e}")
+    finally:
+        driver.quit()
 if __name__ == "__main__":
     main()
