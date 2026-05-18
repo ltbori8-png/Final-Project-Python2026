@@ -17,7 +17,7 @@ def write_json(data):
     with open("prices.json", 'w') as file:
         json.dump(data, file, indent=4)
 
-def read_json() -> None:
+def read_json() -> list:
     try:
         with open("prices.json", 'r') as file:
             return json.load(file)
@@ -29,7 +29,7 @@ class Product:
     name: str
     prices: dict = field(default_factory=dict)
 
-    def add_price(self, site, price: float) -> list:
+    def add_price(self, site, price: float) -> None:
         self.prices[site] = price
 
     def cheapest_site(self):
@@ -60,12 +60,12 @@ class WebsiteScraper:
 
     def get_price(self, driver):
         driver.get(self.url)
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         time.sleep(random.uniform(2, 5))
         wait = WebDriverWait(driver, 15)
         item_price = wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector)))
-        price_text = item_price.text
+            EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector))
+        )
+        print(item_price.get_attribute("outerHTML"))
         match = re.search(r"\$?([\d,]+\.\d{2})", price_text)
         if match:
             return float(match.group(1).replace(",", ""))
@@ -91,8 +91,11 @@ options.add_argument(
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/122.0.0.0 Safari/537.36"
 )
-driver = webdriver.Edge(options=options)
-driver.set_page_load_timeout(30)
+def create_driver():
+    driver = webdriver.Edge(options=options)
+    driver.set_page_load_timeout(30)
+    return driver
+driver = create_driver()
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
     WebsiteScraper(
@@ -103,7 +106,7 @@ websites = [
     WebsiteScraper(
         "Walmart",
         "https://www.walmart.com/ip/Pokemon-TCG-Scarlet-and-Violet-Elite-Trainer-Box-Koraidon-Red-1-Full-Art-Promo-Card-9-Boosters-and-Premium-Accessories/2782014366?wmlspartner=wlpa&selectedSellerId=101070956&sourceid=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&veh=dsn&wmlspartner=dsn_msft_fead0442-95ce-4933-b538-b3c77293bf8b&cn=00k9_fy27_mp_mp_lo_int_dis_mpmax&wl9=&wl11=Online&msclkid=e95a424cea9314207da6284ba1d08e8b",
-        'span[itemprop="price"]'
+        'span[itemprop="price"]
     )
 ]
 def main():
@@ -124,8 +127,6 @@ def main():
         comparer = PriceComparer(pokemon_box)
         comparer.compare()
         old_data = read_json()
-        if old_data is None:
-            old_data = []
         old_data.append(pokemon_box.to_dict())
         write_json(old_data)
         logging.info("Saved to price.json")
