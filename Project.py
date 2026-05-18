@@ -96,14 +96,16 @@ options.add_argument(
 def create_driver():
     driver = webdriver.Edge(options=options)
     driver.set_page_load_timeout(30)
+    options.add_argument("--start-maximized")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-sandbox")
     return driver
-driver = create_driver()
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
     WebsiteScraper(
         "Amazon",
         "https://www.amazon.com/Pokemon-TCG-Scarlet-Violet-Trainer/dp/B0BSNXK3H7/ref=asc_df_B0BSNXK3H7?tag=bingshoppinga-20&linkCode=df0&hvadid=80058400530621&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=95351&hvtargid=pla-4583657880136532&msclkid=9a8a1d99241d169a30f4779e6e772dc9&th=1",
-        'span.a-offscreen'
+        'span.a-price span.a-offscreen'
     ),
     WebsiteScraper(
         "Walmart",
@@ -116,14 +118,21 @@ def main():
         for site in websites:
             success = False
             for attempt in range(3):
+                driver = None
                 try:
+                    driver = create_driver()
                     price = site.get_price(driver)
                     pokemon_box.add_price(site.site_name, price)
                     print(f"{site.site_name}: ${price}")
                     success = True
                     break
                 except Exception as e:
-                    logging.error(f"{site.site_name} attempt {attempt + 1} failed: {e}")
+                    logging.error(
+                        f"{site.site_name} attempt {attempt + 1} failed: {e}"
+                    )
+                finally:
+                    if driver:
+                        driver.quit()
             if not success:
                 logging.error(f"{site.site_name} failed after 3 attempts")
         comparer = PriceComparer(pokemon_box)
@@ -132,9 +141,7 @@ def main():
         old_data.append(pokemon_box.to_dict())
         write_json(old_data)
         logging.info("Saved to price.json")
-    except WebDriverException as e:
-        logging.error(f"Driver crashed: {e}")
-    finally:
-        driver.quit()
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
 if __name__ == "__main__":
     main()
