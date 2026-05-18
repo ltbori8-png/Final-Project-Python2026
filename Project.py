@@ -86,8 +86,8 @@ class PriceComparer:
 
 
 options = webdriver.EdgeOptions()
-options.add_argument(r"--user-data-dir=C:\selenium-profile")
 options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_argument("--start-maximized")
 options.add_argument(
     "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -96,9 +96,6 @@ options.add_argument(
 def create_driver():
     driver = webdriver.Edge(options=options)
     driver.set_page_load_timeout(30)
-    options.add_argument("--start-maximized")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--no-sandbox")
     return driver
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
 websites = [
