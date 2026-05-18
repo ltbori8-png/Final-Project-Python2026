@@ -66,7 +66,8 @@ class WebsiteScraper:
             EC.presence_of_element_located((By.CSS_SELECTOR, self.css_selector))
         )
         print(item_price.get_attribute("outerHTML"))
-        price_text = item_price.text
+        price_text = item_price.get_attribute("textContent").strip()
+        print(price_text)
         match = re.search(r"\$?([\d,]+\.\d{2})", price_text)
         if match:
             return float(match.group(1).replace(",", ""))
@@ -124,7 +125,7 @@ def main():
                 except Exception as e:
                     logging.error(f"{site.site_name} attempt {attempt + 1} failed: {e}")
             if not success:
-                logging.exception(f"{site.site_name} attempt {attempt + 1} failed")
+                logging.error(f"{site.site_name} failed after 3 attempts")
         comparer = PriceComparer(pokemon_box)
         comparer.compare()
         old_data = read_json()
