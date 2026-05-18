@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 import re
 import logging
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 def write_json(data):
     with open("prices.json", 'w') as file:
         json.dump(data, file, indent=4)
@@ -27,7 +29,7 @@ class Product:
     name: str
     prices: dict = field(default_factory=dict)
 
-    def add_price(self, site, price: float) -> None:
+    def add_price(self, site, price: float) -> list:
         self.prices[site] = price
 
     def cheapest_site(self):
@@ -64,9 +66,9 @@ class WebsiteScraper:
         item_price = wait.until(
             EC.visibility_of_element_located((By.CSS_SELECTOR, self.css_selector)))
         price_text = item_price.text
-        match = re.search(r"\$?(\d+\.\d{2})", price_text)
+        match = re.search(r"\$?([\d,]+\.\d{2})", price_text)
         if match:
-            return float(match.group(1))
+            return float(match.group(1).replace(",", ""))
         else:
             raise ValueError("Price not found")
 
@@ -84,7 +86,11 @@ class PriceComparer:
 options = webdriver.EdgeOptions()
 options.add_argument(r"--user-data-dir=C:\selenium-profile")
 options.add_argument("--disable-blink-features=AutomationControlled")
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "AppleWebKit/537.36 (KHTML, like Gecko)" "Chrome/122.0.0.0 Safari/537.36")
+options.add_argument(
+    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/122.0.0.0 Safari/537.36"
+)
 driver = webdriver.Edge(options=options)
 driver.set_page_load_timeout(30)
 pokemon_box = Product ("Pokémon TCG: Scarlet & Violet Elite Trainer Box")
